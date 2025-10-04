@@ -199,9 +199,9 @@ void Library::borrowBook() {
     std::cout << "Book '" << bookToBorrow->getTitle() << "' successfully borrowed by " 
               << borrowingMember->getName() << " on " << timeStr << "." << std::endl;
 
-              
-    std::cout << "\nNOTE: You can keep this book for a maximum of " << MAX_BORROW_MINUTES << " minutes." << std::endl;
-    std::cout << "A fine of $" << std::fixed << std::setprecision(2) << FINE_PER_MINUTE << " per minute will be charged for late returns." << std::endl;
+
+    std::cout << "\nNOTE: You can keep this book for a maximum of " << MAX_BORROW_DAYS << " days." << std::endl;
+    std::cout << "A fine of $" << std::fixed << std::setprecision(2) << FINE_PER_DAY << " per day will be charged for late returns." << std::endl;
 }
 
 void Library::returnBook() {
@@ -223,16 +223,12 @@ void Library::returnBook() {
         return;
     }
 
-   
     const auto& borrowedList = returningMember->getBorrowedBooksList();
-
-    
     if (borrowedList.empty()) {
         std::cout << "This member has not borrowed any books." << std::endl;
-        return; 
+        return;
     }
 
-    
     viewBorrowedBooks(memberId);
     
     std::string bookIsbn;
@@ -244,7 +240,6 @@ void Library::returnBook() {
         return;
     }
 
-    // --- Validation Checks ---
     if (!returningMember->hasBorrowedBook(bookIsbn)) {
         std::cout << "Error: This book was not borrowed by this member." << std::endl;
         return;
@@ -257,19 +252,19 @@ void Library::returnBook() {
         }
     }
 
-
+    // --- Process the Return ---
     auto borrowDate = returningMember->getBorrowDate(bookIsbn);
     auto returnDate = std::chrono::system_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::minutes>(returnDate - borrowDate);
-    long long minutesBorrowed = duration.count();
+    auto duration = std::chrono::duration_cast<std::chrono::hours>(returnDate - borrowDate);
+    int daysBorrowed = duration.count() / 24;
     double fine = 0.0;
-    if (minutesBorrowed > MAX_BORROW_MINUTES) {
-        long long lateMinutes = minutesBorrowed - MAX_BORROW_MINUTES;
-        fine = lateMinutes * FINE_PER_MINUTE;
+    if (daysBorrowed > MAX_BORROW_DAYS) {
+        int lateDays = daysBorrowed - MAX_BORROW_DAYS;
+        fine = lateDays * FINE_PER_DAY;
     }
 
     if (fine > 0) {
-        std::cout << "\nALERT: This book is " << (minutesBorrowed - MAX_BORROW_MINUTES) << " minute(s) late." << std::endl;
+        std::cout << "\nALERT: This book is " << (daysBorrowed - MAX_BORROW_DAYS) << " day(s) late." << std::endl;
         std::cout << "A fine of $" << std::fixed << std::setprecision(2) << fine << " is due." << std::endl;
         
         char confirm;
@@ -290,6 +285,7 @@ void Library::returnBook() {
 }
 
 void Library::saveData() {
+    // === Saving Books ===
     std::ofstream booksFile("books.txt");
     if (booksFile.is_open()) {
         for (const auto& book : books) {
@@ -301,6 +297,7 @@ void Library::saveData() {
         booksFile.close();
     }
 
+    // === Saving Users ===
     std::ofstream usersFile("users.txt");
     if (usersFile.is_open()) {
         for (const auto& user : users) {
@@ -311,6 +308,7 @@ void Library::saveData() {
         usersFile.close();
     }
 
+    // === FINAL STEP: Saving Borrow Records ===
     std::ofstream borrowFile("borrow_records.txt");
     if (borrowFile.is_open()) {
         for (const auto& user : users) {
@@ -332,6 +330,7 @@ void Library::saveData() {
 }
 
 void Library::loadData() {
+    // === Loading Books ===
     std::ifstream booksFile("books.txt");
     if (booksFile.is_open()) {
         std::string line;
@@ -351,6 +350,7 @@ void Library::loadData() {
         booksFile.close();
     }
 
+    // === Loading Users ===
     std::ifstream usersFile("users.txt");
     if (usersFile.is_open()) {
         std::string line;
@@ -371,6 +371,7 @@ void Library::loadData() {
         usersFile.close();
     }
 
+    // === FINAL STEP: Loading Borrow Records ===
     std::ifstream borrowFile("borrow_records.txt");
     if (borrowFile.is_open()) {
         std::string line;
@@ -436,11 +437,11 @@ void Library::viewBorrowedBooks(int memberId) {
 
             
             auto now = std::chrono::system_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::minutes>(now - record.borrowDate);
-            long long minutesBorrowed = duration.count();
+            auto duration = std::chrono::duration_cast<std::chrono::hours>(now - record.borrowDate);
+            int daysBorrowed = duration.count() / 24;
             double fine = 0.0;
-            if (minutesBorrowed > MAX_BORROW_MINUTES) {
-                fine = (minutesBorrowed - MAX_BORROW_MINUTES) * FINE_PER_MINUTE;
+            if (daysBorrowed > MAX_BORROW_DAYS) {
+                fine = (daysBorrowed - MAX_BORROW_DAYS) * FINE_PER_DAY;
             }
 
            
@@ -488,11 +489,11 @@ void Library::viewAllBorrowedBooks() {
                     
                     auto borrowDate = member->getBorrowDate(book.getIsbn());
                     auto now = std::chrono::system_clock::now();
-                    auto duration = std::chrono::duration_cast<std::chrono::minutes>(now - borrowDate);
-                    long long minutesBorrowed = duration.count();
+                    auto duration = std::chrono::duration_cast<std::chrono::hours>(now - borrowDate);
+                    int daysBorrowed = duration.count() / 24;
                     double fine = 0.0;
-                    if (minutesBorrowed > MAX_BORROW_MINUTES) {
-                        fine = (minutesBorrowed - MAX_BORROW_MINUTES) * FINE_PER_MINUTE;
+                    if (daysBorrowed > MAX_BORROW_DAYS) {
+                        fine = (daysBorrowed - MAX_BORROW_DAYS) * FINE_PER_DAY;
                     }
 
                     std::cout << std::left 

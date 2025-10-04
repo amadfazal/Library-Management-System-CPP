@@ -24,8 +24,8 @@ public:
     // Public method to get the single instance
     static Library* getInstance();
 
-     static const int MAX_BORROW_MINUTES = 1;
-    static constexpr double FINE_PER_MINUTE = 1.0;
+    static const int MAX_BORROW_DAYS = 7;
+    static constexpr double FINE_PER_DAY = 1.0;
 
     // Core Library Functions
     void addBook();
