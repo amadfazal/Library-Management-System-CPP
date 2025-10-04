@@ -1,6 +1,6 @@
 #include "Member.h"
 #include <iostream>
-#include <algorithm> // find_if, remove_if ke liye zaroori hai
+#include <algorithm>
 
 // Constructor
 Member::Member(int id, std::string name) : User(id, name) {}
@@ -17,18 +17,17 @@ void Member::displayMenu() {
 // Updated Functions:
 
 void Member::borrowBook(const std::string& bookIsbn) {
-    // Naya variable 'borrowedBooks' istemal karein aur poora record add karein
+    
     borrowedBooks.push_back({bookIsbn, std::chrono::system_clock::now()});
 }
 
 int Member::getBorrowedCount() {
-    // Naya variable 'borrowedBooks' istemal karein
+    
     return borrowedBooks.size();
 }
 
 void Member::returnBook(const std::string& bookIsbn) {
-    // 'remove_if' aur 'erase' ka istemal karke record delete karein
-    // Kyunke ab vector mein struct hai, humein is tarah remove karna hoga
+    
     borrowedBooks.erase(
         std::remove_if(borrowedBooks.begin(), borrowedBooks.end(),
                        [&](const BorrowedBookRecord& record) {
@@ -38,7 +37,7 @@ void Member::returnBook(const std::string& bookIsbn) {
 }
 
 bool Member::hasBorrowedBook(const std::string& bookIsbn) {
-    // 'find_if' ka istemal karke check karein ke record mojood hai
+   
     auto it = std::find_if(borrowedBooks.begin(), borrowedBooks.end(),
                            [&](const BorrowedBookRecord& record) {
                                return record.bookIsbn == bookIsbn;
@@ -54,10 +53,10 @@ std::chrono::system_clock::time_point Member::getBorrowDate(const std::string& b
     if (it != borrowedBooks.end()) {
         return it->borrowDate;
     }
-    // Agar kitaab na mile to ek minimum time point return karein
+    
     return std::chrono::system_clock::time_point::min();
 }
-// Naye function ki implementation
+
 const std::vector<BorrowedBookRecord>& Member::getBorrowedBooksList() const {
     return borrowedBooks;
 }
